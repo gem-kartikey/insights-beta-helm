@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "insights-beta.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "insights-beta.labels" . | nindent 2}}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "insights-beta.labels" . | nindent 4}}
+  template:
+    metadata:
+      labels:
+        {{- include "insights-beta.labels" . | nindent 6}}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}
+        
+        {{- if .Values.service.enabled }}
+        ports:
+        - name: {{ .Chart.Name }}
+          containerPort: {{ .Values.ports.containerPort }}
+        {{- end }}
+        
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+      imagePullSecrets: 
+      {{- with .Values.env }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
